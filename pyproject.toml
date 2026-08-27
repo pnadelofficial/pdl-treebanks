@@ -1,0 +1,45 @@
+[project]
+name = "pdl-treebanks"
+version = "0.1.0"
+description = "Treebank / dependency-parse server for the Perseus Digital Library"
+authors = [
+    {name = "Peter Nadel", email = "peter.nadel@tufts.edu"},
+]
+dependencies = [
+    "fastapi>=0.136.1",
+    "uvicorn[standard]>=0.46.0",
+    "httpx>=0.28.1",
+    "lxml>=6.0.4",
+    "kodon-py",
+]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.uv.sources]
+kodon-py = {git = "https://github.com/PerseusDLCode/kodon-py", rev = "b925cf4cb7254e641ab50075dbb1048fc9bc5cfc"}
+
+[project.scripts]
+pdl-treebanks-dev = "pdl_treebanks.server:main_dev"
+pdl-treebanks = "pdl_treebanks.server:main"
+pdl-treebanks-ingest = "pdl_treebanks.ingest.cli:main"
+pdl-treebanks-aggregate = "pdl_treebanks.aggregate:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/pdl_treebanks"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+    "ruff>=0.11.3",
+]

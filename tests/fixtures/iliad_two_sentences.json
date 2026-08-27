@@ -1,0 +1,241 @@
+{
+  "content": "μῆνιν ἄειδε θεὰ. Πηληϊάδεω δὲ Ἀχιλῆος ἦν.",
+  "extra": null,
+  "lang": "grc",
+  "tokens": [
+    {
+      "end_char": 5,
+      "id": [
+        1
+      ],
+      "identifier": "μῆνιν[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 0,
+      "text": "μῆνιν",
+      "whitespace": true,
+      "words": [
+        {
+          "id": 1,
+          "deprel": "obj",
+          "deps": null,
+          "feats": "Case=Acc|Gender=Fem|Number=Sing",
+          "head": 2,
+          "lemma": "μῆνις",
+          "misc": null,
+          "text": "μῆνιν",
+          "upos": "NOUN",
+          "xpos": "n-s---fa-"
+        }
+      ]
+    },
+    {
+      "end_char": 11,
+      "id": [
+        2
+      ],
+      "identifier": "ἄειδε[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 6,
+      "text": "ἄειδε",
+      "whitespace": true,
+      "words": [
+        {
+          "id": 2,
+          "deprel": "root",
+          "deps": null,
+          "feats": "Aspect=Imp|Mood=Ind|Number=Sing|Person=3|Tense=Past|VerbForm=Fin|Voice=Act",
+          "head": 0,
+          "lemma": "ἀείδω",
+          "misc": null,
+          "text": "ἄειδε",
+          "upos": "VERB",
+          "xpos": "v3siia---"
+        }
+      ]
+    },
+    {
+      "end_char": 15,
+      "id": [
+        3
+      ],
+      "identifier": "θεὰ[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 12,
+      "text": "θεὰ",
+      "whitespace": false,
+      "words": [
+        {
+          "id": 3,
+          "deprel": "nsubj",
+          "deps": null,
+          "feats": "Case=Nom|Gender=Fem|Number=Sing",
+          "head": 2,
+          "lemma": "θεά",
+          "misc": null,
+          "text": "θεὰ",
+          "upos": "NOUN",
+          "xpos": "n-s---fn-"
+        }
+      ]
+    },
+    {
+      "end_char": 16,
+      "id": [
+        4
+      ],
+      "identifier": ".[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 15,
+      "text": ".",
+      "whitespace": true,
+      "words": [
+        {
+          "id": 4,
+          "deprel": "punct",
+          "deps": null,
+          "feats": null,
+          "head": 2,
+          "lemma": ".",
+          "misc": null,
+          "text": ".",
+          "upos": "PUNCT",
+          "xpos": "u--------"
+        }
+      ]
+    },
+    {
+      "end_char": 26,
+      "id": [
+        1
+      ],
+      "identifier": "Πηληϊάδεω[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 17,
+      "text": "Πηληϊάδεω",
+      "whitespace": true,
+      "words": [
+        {
+          "id": 1,
+          "deprel": "nmod",
+          "deps": null,
+          "feats": "Case=Gen|Gender=Masc|Number=Sing",
+          "head": 3,
+          "lemma": "Πηλείδης",
+          "misc": null,
+          "text": "Πηληϊάδεω",
+          "upos": "NOUN",
+          "xpos": "n-s---mg-"
+        }
+      ]
+    },
+    {
+      "end_char": 29,
+      "id": [
+        2
+      ],
+      "identifier": "δὲ[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 27,
+      "text": "δὲ",
+      "whitespace": true,
+      "words": [
+        {
+          "id": 2,
+          "deprel": "cc",
+          "deps": null,
+          "feats": null,
+          "head": 3,
+          "lemma": "δέ",
+          "misc": null,
+          "text": "δὲ",
+          "upos": "PART",
+          "xpos": "g--------"
+        }
+      ]
+    },
+    {
+      "end_char": 37,
+      "id": [
+        3
+      ],
+      "identifier": "Ἀχιλῆος[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 30,
+      "text": "Ἀχιλῆος",
+      "whitespace": true,
+      "words": [
+        {
+          "id": 3,
+          "deprel": "root",
+          "deps": null,
+          "feats": "Case=Gen|Gender=Masc|Number=Sing",
+          "head": 0,
+          "lemma": "Ἀχιλλεύς",
+          "misc": null,
+          "text": "Ἀχιλῆος",
+          "upos": "NOUN",
+          "xpos": "n-s---mg-"
+        }
+      ]
+    },
+    {
+      "end_char": 40,
+      "id": [
+        4
+      ],
+      "identifier": "ἦν[1]",
+      "misc": null,
+      "ner": null,
+      "start_char": 38,
+      "text": "ἦν",
+      "whitespace": false,
+      "words": [
+        {
+          "id": 4,
+          "deprel": "cop",
+          "deps": null,
+          "feats": "Aspect=Imp|Mood=Ind|Number=Sing|Person=3|Tense=Past|VerbForm=Fin|Voice=Act",
+          "head": 3,
+          "lemma": "εἰμί",
+          "misc": null,
+          "text": "ἦν",
+          "upos": "AUX",
+          "xpos": "v3siia---"
+        }
+      ]
+    },
+    {
+      "end_char": 41,
+      "id": [
+        5
+      ],
+      "identifier": ".[2]",
+      "misc": null,
+      "ner": null,
+      "start_char": 40,
+      "text": ".",
+      "whitespace": false,
+      "words": [
+        {
+          "id": 5,
+          "deprel": "punct",
+          "deps": null,
+          "feats": null,
+          "head": 3,
+          "lemma": ".",
+          "misc": null,
+          "text": ".",
+          "upos": "PUNCT",
+          "xpos": "u--------"
+        }
+      ]
+    }
+  ]
+}

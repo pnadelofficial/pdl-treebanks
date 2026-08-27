@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>pdl-treebanks — dependency tree mockup</title>
+<style>
+  /* Palette + roles from the dataviz skill's reference/palette.md.
+     Only the 3 categorical slots used here (core args, modifiers, function/other)
+     plus chart chrome/ink. Validated: node scripts/validate_palette.js
+     "#2a78d6,#eb6834,#1baf7a" --mode light --pairs all  -> ALL PASS (one WARN:
+     aqua sub-3:1 on light surface, mitigated below by never using it as a
+     lone fill without a visible text label next to it).
+  */
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+    --series-core:      #2a78d6; /* slot 1 blue    -- nsubj, obj, iobj (core arguments) */
+    --series-modifier:  #eb6834; /* slot 2 orange  -- nmod, amod, advmod (modifiers) */
+    --series-function:  #1baf7a; /* slot 3 aqua    -- case, det, mark, cc (function words) */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+      --series-core:      #3987e5;
+      --series-modifier:  #d95926;
+      --series-function:  #199e70;
+    }
+  }
+
+  body {
+    margin: 0;
+    padding: 32px;
+    background: var(--page);
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  .card {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--surface-1);
+    border: 1px solid var(--gridline);
+    border-radius: 8px;
+    padding: 24px 28px 20px;
+  }
+  h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 2px;
+  }
+  .subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0 0 18px;
+  }
+  .subtitle .urn {
+    font-family: ui-monospace, monospace;
+  }
+
+  /* --- diagram --- */
+  .tree-word {
+    font-family: "Cardo", "Gentium Plus", "New Athena Unicode", Georgia, serif;
+    font-size: 22px;
+    fill: var(--text-primary);
+    text-anchor: middle;
+  }
+  .tree-upos {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    fill: var(--text-muted);
+    text-anchor: middle;
+  }
+  .tree-edge {
+    fill: none;
+    stroke-width: 2px;
+    stroke-linecap: round;
+  }
+  .tree-edge.core     { stroke: var(--series-core); }
+  .tree-edge.modifier { stroke: var(--series-modifier); }
+  .tree-edge.function { stroke: var(--series-function); }
+
+  .deprel-label {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 10px;
+    fill: var(--text-secondary); /* label ink never carries the series color -- the line does */
+    text-anchor: middle;
+  }
+  .deprel-halo {
+    fill: var(--surface-1);
+    opacity: 0.92;
+  }
+  .root-marker {
+    fill: var(--text-primary);
+  }
+  .root-label {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 9px;
+    fill: var(--text-muted);
+    text-anchor: middle;
+    letter-spacing: 0.06em;
+  }
+
+  /* --- legend --- */
+  .legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--gridline);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-swatch {
+    width: 14px; height: 3px; border-radius: 2px; display: inline-block;
+  }
+
+  /* --- table view (accessibility: a non-graphical fallback must exist) --- */
+  details.table-view { margin-top: 18px; }
+  details.table-view summary {
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding: 4px 0;
+  }
+  table.conllu {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  table.conllu th, table.conllu td {
+    text-align: left;
+    padding: 5px 8px;
+    border-bottom: 1px solid var(--gridline);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  table.conllu th { color: var(--text-muted); font-weight: 500; }
+  table.conllu td.form { color: var(--text-primary); font-family: "Cardo", "Gentium Plus", Georgia, serif; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <div class="card">
+    <h1>μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος</h1>
+    <p class="subtitle">
+      Iliad 1.1 &middot; source stanza:perseus &middot;
+      <span class="urn">urn:cts:greekLit:tlg0012.tlg001.perseus-grc2:1.1:1</span>
+    </p>
+
+    <svg viewBox="0 0 800 400" role="img" aria-label="Dependency tree for μῆνιν ἄειδε θεὰ Πηληϊάδεω Ἀχιλῆος">
+
+      <!-- edges (drawn first, under the words) -->
+      <!-- 1 μῆνιν --obj--> 2 ἄειδε (root) -->
+      <path class="tree-edge core" d="M100,141 Q175,95 250,84">
+        <title>μῆνιν --obj--&gt; ἄειδε</title>
+      </path>
+      <!-- 3 θεὰ --nsubj--> 2 ἄειδε (root) -->
+      <path class="tree-edge core" d="M400,141 Q325,95 250,84">
+        <title>θεὰ --nsubj--&gt; ἄειδε</title>
+      </path>
+      <!-- 5 Ἀχιλῆος --nmod--> 1 μῆνιν  (the hyperbaton: separated by 3 words) -->
+      <path class="tree-edge modifier" d="M700,226 Q400,16 100,169">
+        <title>Ἀχιλῆος --nmod--&gt; μῆνιν (separated by 3 words: a textbook case of hyperbaton)</title>
+      </path>
+      <!-- 4 Πηληϊάδεω --nmod--> 5 Ἀχιλῆος -->
+      <path class="tree-edge modifier" d="M550,311 Q625,265 700,254">
+        <title>Πηληϊάδεω --nmod--&gt; Ἀχιλῆος</title>
+      </path>
+
+      <!-- deprel labels, with a surface-color halo so they stay legible over crossing edges -->
+      <g>
+        <rect class="deprel-halo" x="160" y="90" width="30" height="14" rx="3"/>
+        <text class="deprel-label" x="175" y="100">obj</text>
+
+        <rect class="deprel-halo" x="308" y="90" width="34" height="14" rx="3"/>
+        <text class="deprel-label" x="325" y="100">nsubj</text>
+
+        <rect class="deprel-halo" x="382" y="10" width="36" height="14" rx="3"/>
+        <text class="deprel-label" x="400" y="21">nmod</text>
+
+        <rect class="deprel-halo" x="607" y="259" width="36" height="14" rx="3"/>
+        <text class="deprel-label" x="625" y="270">nmod</text>
+      </g>
+
+      <!-- root marker: small downward arrow into the root word, unstyled by category color
+           since root is a singular structural marker, not a member of a class -->
+      <path class="root-marker" d="M245,38 L255,38 L250,52 Z"/>
+      <text class="root-label" x="250" y="30">ROOT</text>
+
+      <!-- words, positioned x = linear sentence order, y = depth from root -->
+      <text class="tree-word" x="100" y="155">μῆνιν</text>
+      <text class="tree-upos" x="100" y="177">NOUN &middot; acc.sg.fem</text>
+
+      <text class="tree-word" x="250" y="70">ἄειδε</text>
+      <text class="tree-upos" x="250" y="92">VERB &middot; 3sg.impf</text>
+
+      <text class="tree-word" x="400" y="155">θεὰ</text>
+      <text class="tree-upos" x="400" y="177">NOUN &middot; voc.sg.fem</text>
+
+      <text class="tree-word" x="550" y="325">Πηληϊάδεω</text>
+      <text class="tree-upos" x="550" y="347">NOUN &middot; gen.sg.masc</text>
+
+      <text class="tree-word" x="700" y="240">Ἀχιλῆος</text>
+      <text class="tree-upos" x="700" y="262">NOUN &middot; gen.sg.masc</text>
+    </svg>
+
+    <div class="legend">
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--series-core)"></span>core argument (nsubj, obj, iobj)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--series-modifier)"></span>modifier (nmod, amod, advmod)</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--series-function)"></span>function word (case, det, mark, cc)</span>
+    </div>
+
+    <details class="table-view">
+      <summary>View as CoNLL-U table</summary>
+      <table class="conllu">
+        <thead>
+          <tr><th>ID</th><th>FORM</th><th>LEMMA</th><th>UPOS</th><th>FEATS</th><th>HEAD</th><th>DEPREL</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td class="form">μῆνιν</td><td>μῆνις</td><td>NOUN</td><td>Case=Acc|Gender=Fem|Number=Sing</td><td>2</td><td>obj</td></tr>
+          <tr><td>2</td><td class="form">ἄειδε</td><td>ἀείδω</td><td>VERB</td><td>Aspect=Imp|Mood=Ind|Number=Sing|Person=3|Tense=Past|VerbForm=Fin|Voice=Act</td><td>0</td><td>root</td></tr>
+          <tr><td>3</td><td class="form">θεὰ</td><td>θεά</td><td>NOUN</td><td>Case=Voc|Gender=Fem|Number=Sing</td><td>2</td><td>nsubj</td></tr>
+          <tr><td>4</td><td class="form">Πηληϊάδεω</td><td>Πηλείδης</td><td>NOUN</td><td>Case=Gen|Gender=Masc|Number=Sing</td><td>5</td><td>nmod</td></tr>
+          <tr><td>5</td><td class="form">Ἀχιλῆος</td><td>Ἀχιλλεύς</td><td>NOUN</td><td>Case=Gen|Gender=Masc|Number=Sing</td><td>1</td><td>nmod</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+</div>
+</body>
+</html>
