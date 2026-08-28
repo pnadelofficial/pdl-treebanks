@@ -6,17 +6,10 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=04:00:00
-# EDIT ME: every cluster requires these, and there's no sane default --
-# fill in your allocation/partition or the job will be rejected at submit time.
-#SBATCH --partition=CHANGE_ME
-#SBATCH --account=CHANGE_ME
-#
-# Runs nlp_pipeline (as a background server on this node) and
-# pdl-treebanks' ingest + aggregate against it, entirely within one
-# allocation -- avoids needing compute-node internet access (see
-# prepare.sh, which must be run once on a login node first) or
-# cross-node networking.
+#SBATCH --time=02:00:00
+#SBATCH --mail-type=ALL   
+#SBATCH --mail-user=peter.nadel@tufts.edu
+
 #
 # Usage:
 #   1. bash cluster/prepare.sh          (once, on a login node)
@@ -26,8 +19,8 @@
 set -euo pipefail
 
 # --- EDIT ME: paths to your clones on the cluster -----------------------
-NLP_PIPELINE_DIR="${NLP_PIPELINE_DIR:-$HOME/nlp_pipeline}"
-PDL_TREEBANKS_DIR="${PDL_TREEBANKS_DIR:-$HOME/pdl-treebanks}"
+NLP_PIPELINE_DIR="${NLP_PIPELINE_DIR:-/cluster/tufts/perseuslab/pnadel01/perseus/nlp_pipeline}"
+PDL_TREEBANKS_DIR="${PDL_TREEBANKS_DIR:-/cluster/tufts/perseuslab/pnadel01/perseus/pdl-treebanks}"
 # Must match prepare.sh's STANZA_MODEL_DIR -- see that script's comment on
 # why this has to be $NLP_PIPELINE_DIR/stanza_models specifically (the
 # server has no model_dir override, only a hardcoded relative default).
@@ -36,7 +29,7 @@ PDL_TREEBANKS_DIR="${PDL_TREEBANKS_DIR:-$HOME/pdl-treebanks}"
 # A single work's proto-pages directory is enough -- doesn't need to be
 # the whole corpus. See run_tokenizer.py's layout convention in
 # MinimumViablePerseus: proto-pages/<textgroup>/<work>/<version>/.
-PROTO_DIR="${PROTO_DIR:-$HOME/proto-pages/latinLit/phi0690/phi003/perseus-lat2}"
+PROTO_DIR="${PROTO_DIR:-/cluster/tufts/perseuslab/pnadel01/perseus/proto-pages}"
 TARGET_LANG="${TARGET_LANG:-la}"                                # grc or la -- NOT named LANG, that's a reserved locale env var
 DB_PATH="${DB_PATH:-$PDL_TREEBANKS_DIR/treebanks.db}"
 SOURCE="stanza:perseus"

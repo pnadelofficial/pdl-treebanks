@@ -1,17 +1,12 @@
 #!/usr/bin/env bash
-# Run ONCE on a login node (i.e. somewhere with internet access) before
-# submitting ingest.sbatch. Compute nodes on most HPC clusters have no
-# general internet access, so both `uv sync` (needs PyPI) and Stanza's
-# model download (needs Hugging Face) have to happen here instead of
-# inside the batch job.
 #
 # Usage: edit the paths below, then:
 #   bash cluster/prepare.sh
 set -euo pipefail
 
 # --- EDIT ME: paths to your clones on the cluster -----------------------
-NLP_PIPELINE_DIR="${NLP_PIPELINE_DIR:-$HOME/nlp_pipeline}"
-PDL_TREEBANKS_DIR="${PDL_TREEBANKS_DIR:-$HOME/pdl-treebanks}"
+NLP_PIPELINE_DIR="${NLP_PIPELINE_DIR:-/cluster/tufts/perseuslab/pnadel01/perseus/nlp_pipeline}"
+PDL_TREEBANKS_DIR="${PDL_TREEBANKS_DIR:-/cluster/tufts/perseuslab/pnadel01/perseus/pdl-treebanks}"
 # nlp_pipeline.server always builds NLPPipeline() with no arguments, which
 # defaults model_dir to "./stanza_models" relative to its CWD -- there's no
 # env var hook for this (only the importable NLPPipeline class takes
