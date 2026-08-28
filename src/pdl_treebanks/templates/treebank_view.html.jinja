@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ cts_urn }} — pdl-treebanks</title>
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-1:      #fcfcfb;
+    --page:           #f9f9f7;
+    --text-primary:   #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted:     #898781;
+    --gridline:       #e1e0d9;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) .viz-root {
+      color-scheme: dark;
+      --surface-1:      #1a1a19;
+      --page:           #0d0d0d;
+      --text-primary:   #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted:     #898781;
+      --gridline:       #2c2c2a;
+    }
+  }
+
+  body { margin: 0; padding: 32px; background: var(--page); font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .card { max-width: 900px; margin: 0 auto 24px; background: var(--surface-1); border: 1px solid var(--gridline); border-radius: 8px; padding: 24px 28px 20px; }
+  h1 { font-size: 15px; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; }
+  h2 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin: 0 0 12px; }
+  .subtitle { font-size: 12px; color: var(--text-secondary); margin: 0 0 18px; }
+  .subtitle .urn { font-family: ui-monospace, monospace; }
+  .sentence-text { font-family: "Cardo", "Gentium Plus", "New Athena Unicode", Georgia, serif; font-size: 16px; color: var(--text-primary); margin: 0 0 10px; }
+
+  /* Dependency outline: one <details>/<summary> per word with children,
+     using the browser's native disclosure widget -- no layout math, no
+     SVG, nothing to collapse but what the browser already knows how to. */
+  ul.tree-outline, ul.tree-outline ul { list-style: none; margin: 0; padding-left: 22px; }
+  ul.tree-outline { padding-left: 0; margin-bottom: 20px; }
+  ul.tree-outline li { margin: 3px 0; }
+
+  /* Expandable (has dependents): a visible, bordered disclosure chevron
+     plus a count badge -- both change on click, so "this can open" is
+     never just a subtle character easy to miss. */
+  ul.tree-outline details > summary {
+    cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px;
+    padding: 2px 4px 2px 2px; border-radius: 4px;
+  }
+  ul.tree-outline details > summary:hover { background: var(--gridline); }
+  ul.tree-outline details > summary::-webkit-details-marker { display: none; }
+  ul.tree-outline details > summary::before {
+    content: "▾"; color: var(--text-secondary); font-size: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border: 1px solid var(--gridline); border-radius: 3px;
+    flex-shrink: 0;
+  }
+  ul.tree-outline details:not([open]) > summary::before { content: "▸"; }
+  .ol-count {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 10px;
+    color: var(--text-secondary); background: var(--gridline); border-radius: 8px;
+    padding: 1px 7px;
+  }
+
+  /* Leaf (no dependents): plain text, no chevron box, no badge, indented
+     to line up under expandable siblings -- nothing here signals "click
+     me" because there's nothing to expand. */
+  ul.tree-outline li.ol-leaf { padding-left: 20px; color: var(--text-secondary); }
+
+  .ol-word { font-family: "Cardo", "Gentium Plus", "New Athena Unicode", Georgia, serif; font-size: 15px; color: var(--text-primary); }
+  .ol-tag { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 10px; color: var(--text-muted); letter-spacing: 0.02em; }
+  .ol-empty { color: var(--text-muted); font-size: 13px; }
+
+  details.table-view { margin-top: 10px; }
+  details.table-view summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--text-secondary); padding: 4px 0; }
+  table.kw { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  table.kw th, table.kw td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--gridline); color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+  table.kw th { color: var(--text-muted); font-weight: 500; }
+  table.kw td.lemma { color: var(--text-primary); font-family: "Cardo", "Gentium Plus", Georgia, serif; font-size: 14px; }
+  .tier-group { margin-bottom: 14px; }
+  .tier-group h3 { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin: 0 0 6px; }
+  .tier-list { margin: 0; padding-left: 18px; font-family: "Cardo", "Gentium Plus", Georgia, serif; font-size: 14px; color: var(--text-primary); }
+</style>
+</head>
+<body>
+<div class="viz-root">
+  <div class="card">
+    <h1>{{ cts_urn }}</h1>
+    <p class="subtitle">source {{ source }} &middot; {{ sentences|length }} sentence{{ 's' if sentences|length != 1 }}</p>
+
+    {% for item in sentences %}
+      <p class="sentence-text">{{ item.sentence.text }}</p>
+      {{ item.outline | safe }}
+    {% endfor %}
+  </div>
+
+  <div class="card">
+    <h2>Key words in this passage</h2>
+    <p class="subtitle">Terms are (lemma, morphology) pairs. Ranked lists exclude words used only once at that
+      scope &mdash; those are broken out below instead.</p>
+
+    <details class="table-view" open>
+      <summary>Ranked against the rest of the work</summary>
+      <table class="kw">
+        <thead><tr><th>Lemma</th><th>Morphology</th><th>Count</th><th>TF-IDF</th></tr></thead>
+        <tbody>
+          {% for kw in work_keywords %}
+          <tr><td class="lemma">{{ kw.lemma }}</td><td>{{ kw.feats or '—' }}</td><td>{{ kw.count }}</td><td>{{ "%.4f"|format(kw.tfidf) }}</td></tr>
+          {% else %}
+          <tr><td colspan="4">No terms used more than once in this passage.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+
+    <details class="table-view">
+      <summary>This work's key terms, ranked against {{ text_group }}'s other work(s)</summary>
+      <table class="kw">
+        <thead><tr><th>Lemma</th><th>Morphology</th><th>Count in work</th><th>TF-IDF</th></tr></thead>
+        <tbody>
+          {% for kw in author_keywords %}
+          <tr><td class="lemma">{{ kw.lemma }}</td><td>{{ kw.feats or '—' }}</td><td>{{ kw.count }}</td><td>{{ "%.4f"|format(kw.tfidf) }}</td></tr>
+          {% else %}
+          <tr><td colspan="4">No terms used more than once across this work.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </details>
+
+    <details class="table-view">
+      <summary>Words used only once (by scope)</summary>
+      <div class="tier-group">
+        <h3>Unique to {{ text_group }}, ever</h3>
+        <ul class="tier-list">
+          {% for t in hapax.author %}<li>{{ t.lemma }}{% if t.feats %} <span class="subtitle">({{ t.feats }})</span>{% endif %}</li>{% else %}<li class="subtitle">none</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="tier-group">
+        <h3>Unique to this work (used elsewhere by {{ text_group }})</h3>
+        <ul class="tier-list">
+          {% for t in hapax.work %}<li>{{ t.lemma }}{% if t.feats %} <span class="subtitle">({{ t.feats }})</span>{% endif %}</li>{% else %}<li class="subtitle">none</li>{% endfor %}
+        </ul>
+      </div>
+      <div class="tier-group">
+        <h3>Unique to this passage (recurs elsewhere in the work)</h3>
+        <ul class="tier-list">
+          {% for t in hapax.passage %}<li>{{ t.lemma }}{% if t.feats %} <span class="subtitle">({{ t.feats }})</span>{% endif %}</li>{% else %}<li class="subtitle">none</li>{% endfor %}
+        </ul>
+      </div>
+    </details>
+  </div>
+</div>
+</body>
+</html>
