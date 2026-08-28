@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+#SBATCH --job-name=pdl-treebanks-ingest
+#SBATCH --output=%x-%j.out
+#SBATCH --error=%x-%j.err
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
+# EDIT ME: every cluster requires these, and there's no sane default --
+# fill in your allocation/partition or the job will be rejected at submit time.
+#SBATCH --partition=CHANGE_ME
+#SBATCH --account=CHANGE_ME
+#
+# Runs nlp_pipeline (as a background server on this node) and
+# pdl-treebanks' ingest + aggregate against it, entirely within one
+# allocation -- avoids needing compute-node internet access (see
+# prepare.sh, which must be run once on a login node first) or
+# cross-node networking.
+#
+# Usage:
+#   1. bash cluster/prepare.sh          (once, on a login node)
+#   2. edit the "EDIT ME" sections below
+#   3. sbatch cluster/ingest.sbatch
+
+set -euo pipefail
+
+# --- EDIT ME: paths to your clones on the cluster -----------------------
+NLP_PIPELINE_DIR="${NLP_PIPELINE_DIR:-$HOME/nlp_pipeline}"
+PDL_TREEBANKS_DIR="${PDL_TREEBANKS_DIR:-$HOME/pdl-treebanks}"
+# Must match prepare.sh's STANZA_MODEL_DIR -- see that script's comment on
+# why this has to be $NLP_PIPELINE_DIR/stanza_models specifically (the
+# server has no model_dir override, only a hardcoded relative default).
+
+# --- EDIT ME: what to ingest ---------------------------------------------
+# A single work's proto-pages directory is enough -- doesn't need to be
+# the whole corpus. See run_tokenizer.py's layout convention in
+# MinimumViablePerseus: proto-pages/<textgroup>/<work>/<version>/.
+PROTO_DIR="${PROTO_DIR:-$HOME/proto-pages/latinLit/phi0690/phi003/perseus-lat2}"
+TARGET_LANG="${TARGET_LANG:-la}"                                # grc or la -- NOT named LANG, that's a reserved locale env var
+DB_PATH="${DB_PATH:-$PDL_TREEBANKS_DIR/treebanks.db}"
+SOURCE="stanza:perseus"
+NLP_PORT=8123
+# --------------------------------------------------------------------------
+
+NLP_URL="http://127.0.0.1:${NLP_PORT}"
+NLP_PID=""
+
+cleanup() {
+  if [[ -n "$NLP_PID" ]] && kill -0 "$NLP_PID" 2>/dev/null; then
+    echo "Stopping nlp_pipeline server (pid $NLP_PID)"
+    kill "$NLP_PID"
+  fi
+}
+trap cleanup EXIT
+
+echo "== starting nlp_pipeline on $NLP_URL =="
+(
+  # cd here matters, not just for uv: NLPPipeline() (no args, hardcoded in
+  # nlp_pipeline.server) resolves its model_dir default ("./stanza_models")
+  # relative to this CWD, which is where prepare.sh must have downloaded them.
+  cd "$NLP_PIPELINE_DIR"
+  uv run uvicorn nlp_pipeline.server:app --host 127.0.0.1 --port "$NLP_PORT" \
+    > nlp_pipeline.log 2>&1
+) &
+NLP_PID=$!
+
+echo "== waiting for nlp_pipeline to become reachable =="
+for i in $(seq 1 60); do
+  if curl -sf "$NLP_URL/" > /dev/null 2>&1; then
+    echo "nlp_pipeline is up (after ${i}0s or less)"
+    break
+  fi
+  if [[ "$i" -eq 60 ]]; then
+    echo "nlp_pipeline never came up -- check $NLP_PIPELINE_DIR/nlp_pipeline.log" >&2
+    exit 1
+  fi
+  sleep 10
+done
+
+echo "== ingesting $PROTO_DIR (lang=$TARGET_LANG) into $DB_PATH =="
+(
+  cd "$PDL_TREEBANKS_DIR"
+  uv run pdl-treebanks-ingest \
+    --proto-dir "$PROTO_DIR" \
+    --db "$DB_PATH" \
+    --nlp-url "$NLP_URL" \
+    --lang "$TARGET_LANG"
+)
+
+echo "== aggregating =="
+(
+  cd "$PDL_TREEBANKS_DIR"
+  uv run pdl-treebanks-aggregate --db "$DB_PATH" --source "$SOURCE"
+)
+
+echo "== done. db at $DB_PATH =="
