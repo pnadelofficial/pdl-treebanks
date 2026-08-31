@@ -19,7 +19,7 @@ STANZA_MODEL_DIR="${STANZA_MODEL_DIR:-$NLP_PIPELINE_DIR/stanza_models}"
 LANGUAGES=("grc" "la")
 # --------------------------------------------------------------------------
 
-module load uv
+module load uv 
 
 echo "== uv sync: nlp_pipeline =="
 (cd "$NLP_PIPELINE_DIR" && uv sync)
@@ -37,8 +37,8 @@ for lang in "${LANGUAGES[@]}"; do
   # available this time so it can actually fetch anything missing.
   (cd "$NLP_PIPELINE_DIR" && uv run python -c "
 from nlp_pipeline.pipeline import NLPPipeline
-pipeline = NLPPipeline()
-pipeline.analyze_str('test', lang='$lang') 
+pipeline = NLPPipeline(model_dir='$STANZA_MODEL_DIR')
+pipeline.analyze_str('test', lang='$lang')
 print('  $lang OK')
 ")
 done
