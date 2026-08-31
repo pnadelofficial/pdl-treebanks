@@ -37,8 +37,8 @@ for lang in "${LANGUAGES[@]}"; do
   # available this time so it can actually fetch anything missing.
   (cd "$NLP_PIPELINE_DIR" && uv run python -c "
 from nlp_pipeline.pipeline import NLPPipeline
-pipeline = NLPPipeline(model_dir='$STANZA_MODEL_DIR')
-pipeline.analyze_str('test', lang='$lang')
+pipeline = NLPPipeline()
+pipeline.analyze_str('test', lang='$lang') 
 print('  $lang OK')
 ")
 done
