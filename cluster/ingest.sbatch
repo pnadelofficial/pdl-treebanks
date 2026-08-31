@@ -47,6 +47,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
+module load uv
+
 echo "== starting nlp_pipeline on $NLP_URL =="
 (
   # cd here matters, not just for uv: NLPPipeline() (no args, hardcoded in

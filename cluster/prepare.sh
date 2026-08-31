@@ -19,6 +19,8 @@ STANZA_MODEL_DIR="${STANZA_MODEL_DIR:-$NLP_PIPELINE_DIR/stanza_models}"
 LANGUAGES=("grc" "la")
 # --------------------------------------------------------------------------
 
+module load uv
+
 echo "== uv sync: nlp_pipeline =="
 (cd "$NLP_PIPELINE_DIR" && uv sync)
 
